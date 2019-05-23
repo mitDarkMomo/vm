@@ -366,6 +366,7 @@ public class VM {
             }
 
             //DEBUG System.out.println(" OP IS " + op.name() + " GASCOST IS " + gasCost + " NUM IS " + op.asInt());
+            logger.info("op name is: {}", op.name());
             program.spendGas(gasCost, op.name());
 
             // Log debugging line for VM
@@ -939,6 +940,16 @@ public class VM {
                         hint = "timestamp: " + timestamp.value();
 
                     program.stackPush(timestamp);
+                    program.step();
+                }
+                break;
+                case NUMBER: {
+                    DataWord number = program.getTimestamp();
+
+                    if (logger.isInfoEnabled())
+                        hint = "number: " + number.value();
+
+                    program.stackPush(number);
                     program.step();
                 }
                 break;
