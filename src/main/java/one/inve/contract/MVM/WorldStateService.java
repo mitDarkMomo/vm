@@ -236,27 +236,6 @@ public class WorldStateService {
 		return ((INVERepositoryRoot) track).getRoot();
 	}
 
-	// temporal methanism which is not rigirous
-	/**
-	 * 直接設置世界狀態餘額
-	 * 
-	 * @param dbId
-	 * @param address
-	 * @param value
-	 * @return
-	 */
-	public static void setBalance(String dbId, String address, BigInteger value) {
-		// Repository track = getTrack(dbId);
-
-		// // 讀取餘額
-		// BigInteger balance = track.getBalance(address.getBytes());
-		// // 餘額清零
-		// track.addBalance(address.getBytes(), balance.negate());
-		// // 直接設置餘額
-		// track.addBalance(address.getBytes(), value);
-		// // force it to commit root
-		// ((INVERepositoryRoot) track).commit(dbId);
-	}
 
 	/**
      * 執行無手續費查詢世界狀態
@@ -292,9 +271,41 @@ public class WorldStateService {
         return executor.getResult().getHReturn();
     }
 
-    public static void test(String cfgDir, String dbPath, String dbId) {
+	/**
+	 * 在指定数据库中查询地址余额
+	 * @param cfgDir	root.cfg 文件所在目录路径
+	 * @param dbPath	state 数据库父目录路径
+	 * @param dbId		数据库前缀标识:0_6
+	 * @return			BigInteger 余额
+	 */
+    public static BigInteger getBalance(String cfgDir, String dbPath, String dbId, String address) {
 		Repository track = RepositoryProvider.getTrackByPath(cfgDir, dbPath, dbId);
-		BigInteger balance = track.getBalance("NUOX47THDUFUT7Z6XPNN75YJYRJK2LVC".getBytes());
-		System.out.println("balance of '" + "NUOX47THDUFUT7Z6XPNN75YJYRJK2LVC' is: " + balance.toString());
+		BigInteger balance = track.getBalance(address.getBytes());
+		logger.info("balance of '{}' is: {}", address, balance.toString());
+		return balance;
 	}
+
+	/**
+	 * 在指定数据库中设置地址余额
+	 * @param cfgDir	root.cfg 文件所在目录路径
+	 * @param dbPath	state 数据库父目录路径
+	 * @param dbId		数据库前缀标识:0_6
+	 * @param address	要更新余额的地址
+	 * @param value		要设定的余额
+	 */
+	public static void setBalance(String cfgDir, String dbPath, String dbId, String address, BigInteger value) {
+		Repository track = RepositoryProvider.getTrackByPath(cfgDir, dbPath, dbId);
+
+		// 讀取餘額
+		BigInteger balance = track.getBalance(address.getBytes());
+		// 餘額清零
+		track.addBalance(address.getBytes(), balance.negate());
+		// 直接設置餘額
+		track.addBalance(address.getBytes(), value);
+		// force it to commit root
+		((INVERepositoryRoot) track).commit(cfgDir, dbId);
+		logger.info("balance of '{}' updated: {}", address, value.toString());
+	}
+
+
 }

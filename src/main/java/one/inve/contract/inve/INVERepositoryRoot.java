@@ -119,6 +119,32 @@ public class INVERepositoryRoot extends RepositoryImpl {
         }
     }
 
+    /**
+     * 更新指定数据库 & 更新对应的 root.cfg
+     * @param cfgDir
+     * @param dbId
+     */
+    public synchronized void commit(String cfgDir, String dbId) {
+        super.commit();
+        receiptCache.flush();
+        try {
+            String roothash = toHexString(stateTrie.getRootHash());
+
+            File file = new File(cfgDir + dbId + "root.cfg");
+            if (!file.exists()) file.createNewFile();
+            Properties properties = new Properties();
+            FileOutputStream out = new FileOutputStream(file);
+            properties.setProperty("roothash", roothash);
+            properties.store(out, "Root Configuration");
+            out.close();
+            trieCache.flush();
+            logger.info("State root updated: {}", roothash);
+
+        } catch (Exception e) {
+            logger.error("error occurs when trying to write root.cfg.", e);
+        }
+    }
+
     @Override
     public synchronized byte[] getRoot() {
         storageCache.flush();
