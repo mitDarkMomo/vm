@@ -307,5 +307,16 @@ public class WorldStateService {
 		logger.info("balance of '{}' updated: {}", address, value.toString());
 	}
 
-
+    /**
+     *  在指定数据库中查找地址是否存在
+     * @param cfgDir	root.cfg 文件所在目录路径
+     * @param dbPath	state 数据库父目录路径
+     * @param dbId		数据库前缀标识:0_6
+     * @param address	要判断是否存在的地址
+     * @return
+     */
+    public static Boolean isAddressExist(String cfgDir, String dbPath, String dbId, String address) {
+        Repository track = RepositoryProvider.getTrackByPath(cfgDir, dbPath, dbId);
+        return track.isExist(address.getBytes());
+    }
 }
